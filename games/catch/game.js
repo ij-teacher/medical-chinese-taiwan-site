@@ -4,6 +4,7 @@ const phrases=['出現＿＿','開始＿＿','情況＿＿','網路＿＿','＿�
 const scenes=['醫師問：「除了頭痛，還有其他身體不舒服的表現嗎？」這些表現叫做＿＿。','他的體溫比平常高，已經三十八度半了。他開始＿＿。','原本只有一點不舒服，現在痛得沒辦法睡覺。情況越來越＿＿。','看醫生前，先到櫃檯登記科別、安排看診，這叫做＿＿。','已經掛好號，在等候區等醫師叫到自己的名字，這時正在＿＿。','醫師問：「你最近有沒有碰到生病的人，或跟他們在一起？」他在問有沒有＿＿病人。','她吃海鮮後出現紅點，而且很癢，可能是海鮮＿＿。','鼻子、喉嚨等讓空氣進出身體的通道，叫做＿＿。','上次看診後還沒好，醫師要他為了同一個問題再來看一次，這叫做＿＿。','看完醫生，拿著醫師開藥的文件到藥局領藥。這份文件叫做＿＿。','藥袋寫「飯後吃藥」，正式的說法是「飯後＿＿」。','他身體很不舒服，決定去醫院看醫生，也就是去＿＿。','身體的水分不夠，醫師提醒他多喝水，＿＿水分。','咳嗽讓他晚上睡不好，已經＿＿睡眠。'];
 let words=[],queue=[],position=0,options=[],lane=1,score=0,correct=0,missed=new Set(),requeued=new Set(),mode='meaning',duration=10000,active=false,paused=false,elapsed=0,last=0,raf=0,reviewSession=false,initialCount=14,roundOpen=false;
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let previousAnswerLane=-1, sameLaneCount=0, dropPaths=[];
 function show(id){for(const n of ['setup','play','results'])$(n).hidden=n!==id;window.scrollTo({top:0,behavior:'instant'});}
 function chooseLane(n){lane=Math.max(0,Math.min(2,n));$('basket').style.left=(lane*100/3+2.6667)+'%';$('basket').setAttribute('aria-label','藥籃在'+['左邊','中間','右邊'][lane]);document.querySelectorAll('[data-lane]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.lane)===lane?'true':'false'));}
 function stop(){active=false;cancelAnimationFrame(raf);}
@@ -11,15 +12,19 @@ function start(ids=null){stop();mode=document.querySelector('[name=mode]:checked
 function nextRound(){
   if(position>=queue.length){finish();return;}
   const id=queue[position];options=shuffle([id,...shuffle(words.map((_,i)=>i).filter(i=>i!==id)).slice(0,2)]);
+  let answerLane=options.indexOf(id);
+  if(sameLaneCount>=2 && answerLane===previousAnswerLane){const other=shuffle([0,1,2].filter(n=>n!==answerLane))[0];[options[answerLane],options[other]]=[options[other],options[answerLane]];answerLane=other;}
+  sameLaneCount=answerLane===previousAnswerLane?sameLaneCount+1:1;previousAnswerLane=answerLane;
+  const heights=shuffle([4,40,76]);dropPaths=heights.map(y=>({start:y+Math.random()*12,delay:Math.random()*700}));
   $('progress').textContent=`${position+1} / ${queue.length}`;$('score').textContent=score;$('correct').textContent=correct;
   $('prompt-kind').textContent=({meaning:'看解釋，接住對應的生詞',phrase:'完成搭配，接住缺少的生詞',scene:'讀情境，接住最適合的生詞'})[mode];
   $('question').textContent=mode==='meaning'?words[id][2]:mode==='phrase'?phrases[id]:scenes[id];
   $('retry-tag').hidden=position<initialCount;
   $('cards').replaceChildren();
-  options.forEach((idx,i)=>{const card=document.createElement('div');card.className='word-card';card.style.left=(i*100/3)+'%';const b=document.createElement('b');b.textContent=words[idx][0];card.append(b);if(mode==='meaning'){const p=document.createElement('small');p.textContent=words[idx][1];card.append(p);}$('cards').append(card);});
+  options.forEach((idx,i)=>{const card=document.createElement('div');card.className='word-card';card.style.width='26%';card.style.marginLeft='0';card.style.left=(i*100/3+1+Math.random()*5)+'%';const b=document.createElement('b');b.textContent=words[idx][0];card.append(b);if(mode==='meaning'){const p=document.createElement('small');p.textContent=words[idx][1];card.append(p);}$('cards').append(card);});
   $('feedback').hidden=true;$('pause-overlay').hidden=true;$('pause').textContent='暫停 ⏸';$('pause').disabled=false;$('catch-now').disabled=false;document.querySelectorAll('[data-lane]').forEach(b=>b.disabled=false);chooseLane(1);elapsed=0;last=performance.now();paused=false;active=true;roundOpen=true;draw();raf=requestAnimationFrame(tick);
 }
-function draw(){const max=$('arena').clientHeight-81-90;const y=15+Math.min(1,elapsed/duration)*max;document.querySelectorAll('.word-card').forEach(c=>c.style.transform=`translateY(${y}px)`);}
+function draw(){const end=$('arena').clientHeight-81-75;document.querySelectorAll('.word-card').forEach((c,i)=>{const path=dropPaths[i];const progress=Math.max(0,Math.min(1,(elapsed-path.delay)/(duration-path.delay)));const y=path.start+(end-path.start)*progress;c.style.transform=`translateY(${y}px)`;});}
 function tick(now){if(!active)return;if(!paused){elapsed+=Math.min(now-last,100);draw();if(elapsed>=duration){resolve();return;}}last=now;raf=requestAnimationFrame(tick);}
 function resolve(){if(!active||paused||!roundOpen)return;roundOpen=false;stop();const id=queue[position];const isRight=options[lane]===id;const retry=position>=initialCount;
   if(isRight){score+=retry?5:10;correct++;}else{missed.add(id);if(!requeued.has(id)){queue.push(id);requeued.add(id);}}
