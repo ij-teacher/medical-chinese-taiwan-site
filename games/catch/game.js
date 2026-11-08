@@ -24,6 +24,7 @@ function tick(now){if(!active)return;if(!paused){elapsed+=Math.min(now-last,100)
 function resolve(){if(!active||paused||!roundOpen)return;roundOpen=false;stop();const id=queue[position];const isRight=options[lane]===id;const retry=position>=initialCount;
   if(isRight){score+=retry?5:10;correct++;}else{missed.add(id);if(!requeued.has(id)){queue.push(id);requeued.add(id);}}
   $('score').textContent=score;$('correct').textContent=correct;
+  $('feedback').dataset.correct=String(isRight);
   $('feedback-title').textContent=isRight?'接住了！答對了 ✓':'這次先記起來，再練習一次';
   $('answer-word').replaceChildren(document.createTextNode(words[id][0]));const py=document.createElement('span');py.className='pinyin';py.textContent=words[id][1];$('answer-word').append(py);
   $('answer-meaning').textContent=words[id][2];$('answer-phrase').textContent='常見搭配：'+words[id][3];$('feedback').hidden=false;$('pause').disabled=true;$('catch-now').disabled=true;document.querySelectorAll('[data-lane]').forEach(b=>b.disabled=true);$('next').textContent=position+1>=queue.length?'看看練習成果 →':'下一題 →';$('next').focus();
