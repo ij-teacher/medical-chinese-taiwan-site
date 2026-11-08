@@ -22,3 +22,5 @@ fieldset label:nth-of-type(1){background:#eaf7ed;border-color:#bfdecd}fieldset l
 @keyframes celebrate{0%{transform:scale(.5) rotate(-8deg);opacity:0}65%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 @media(max-width:650px){.stats{padding:7px;gap:5px}.stats>span{padding:9px 3px;font-size:12px}.stats b{margin-left:3px}}
 @media(prefers-reduced-motion:reduce){.primary{transition:none}.feedback[data-correct=true]:before{animation:none}}
+
+.game-qr{display:flex;align-items:center;justify-content:space-between;gap:25px;background:#eee8fa;border:1px solid #d7caeb;border-radius:20px;padding:30px;margin:0 0 40px}.game-qr h2{font-size:25px;line-height:1.5;margin:0 0 12px}.game-qr p{line-height:1.7}.game-qr img{width:200px;height:200px;max-width:100%;border-radius:10px;flex-shrink:0}.game-qr a{font-weight:bold;font-size:14px}@media(max-width:650px){.game-qr{flex-direction:column;text-align:center;padding:25px 18px}.game-qr h2{font-size:22px}}
