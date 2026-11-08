@@ -8,7 +8,7 @@
 .vocab-table th,.vocab-table td{border:1px solid #566a65;padding:14px 16px;text-align:left;vertical-align:middle}
 .vocab-table thead th{background:#e7eef5;color:var(--teal);font-weight:700;text-align:center;white-space:nowrap}
 .vocab-table tbody th{width:13%;font-weight:400;white-space:nowrap}
-.vocab-table .vocab-pinyin{width:21%;font-family:Georgia,"Times New Roman",serif}
+.vocab-table .vocab-pinyin{width:21%;font-family:Arial,"Segoe UI",sans-serif}
 .vocab-table td:nth-child(3){width:35%}
 .vocab-table .vocab-collocations{width:31%;font-size:20px}
 .vocab-table tbody tr:nth-child(even){background:#f7f9fa}
